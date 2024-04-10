@@ -1,0 +1,120 @@
+---
+title: "Replicating codes for 'Optimal Bayesian Designs for Experiments on Networks' "
+output: 
+  html_document:
+    number_sections: true
+date: "2023-11-22"
+---
+
+<!-- author: "Trang Bui, Stefan Steiner, Nathaniel Stevens" -->
+
+This .zip file contains R (x86_64, mingw32, 4.1.2) code to reproduce the results in Section 4 of the paper. We first describe the structure of the file in Section 1, then provide instructions as to use the files to reproduce the results in Section 4.
+
+# Structure of the .zip File 
+
+## Description of Folders
+
+- Folder `data`: contains the Caltech and UMich network data sets. These data sets are downloaded from the [Network Repository](https://networkrepository.com/socfb.php), which contains snapshots of Facebook friendship networks at universities in one day of 2005. The data sets were downloaded and the header was removed. 
+
+- Folder `funcs`: core functions (defined in files 1-2.4) to calculate design evaluation for each model and to find designs according to algorithms described in the paper.
+
+- Folder `saved results`: contains the results from the paper.
+
+    - Folder `checks`: contains the results from test commands at the end of files 1-2.4 to check whether the functions in `funcs` folder work as expected.
+    
+    - Folder `designs`: contains the results from the design-finding algorithm runs
+    
+    - Folder `evaluation`: contains the results from the design-finding algorithm runs. However, in this folder, design criterion values are re-evaluated with more Monte Carlo iterations, so that we get more accurate evaluation of the resulting designs.
+    
+    - Folder `plots`: contains the plots given in the paper and the supplementary materials.
+    
+    - `clustering_compare.RData`: contains data to compare the different clustering algorithms, and to reproduce Table S1.
+    
+    - `mc_trace.RData`: contains data for the convergence of the Monte Carlo approximations, and to reproduce Figure S1.
+    
+    - `designs_summaries.RData`: contains information about the resulting designs found by different algorithms, including design criterion values and design characteristics. The objects in this data sets are used to reproduce Figure 1, Figure 2, Table S2, and Figure S2.
+    
+- Folder `saved results`: contains empty folders to save results from YOUR runs.
+    
+## Description of Code Files
+
+In general, code files 1-1.4 contains functions to do design criterion evaluation for each model, code files 2-2.4 contains functions to produce designs, and code files 3.1-3.5 contains commands to reproduce the results in the paper. The details are given below. 
+
+- `0. install packages.R`: contains functions to check and install required R packages. 
+
+    - `rcpp_help_funcs.cpp`: contains C++ functions to calculate the design criteria according to each model in the paper. This helps increase the speed of the code runs. 
+    
+    - `rcpp_help_funcs.R`: contains similar functions as in `rcpp_help_funcs.cpp` in case the `Rcpp` package cannot be properly installed and used.
+
+- `1. monte carlo funcs.R`: contains help functions to run Monte Carlo approximations and process the data sets. The results of this file is saved in `funcs/mc_funcs.RData`
+
+    - `1.1. gane funcs.R`: contains functions and graph objects to evaluate design criterion for the "gane" (POW-DEG) model. The results of this file is saved in `funcs/gane_funcs.RData`. At the end of the file (lines 212-end), there are also some test commands to calculate the design criterion for a randomly generated design. 
+    
+    - `1.2. basse funcs.R`: contains functions and graph objects to evaluate design criterion for the "basse" (NS) model. The results of this file is saved in `funcs/basse_funcs.RData`. At the end of the file (lines 122-end), there are also some test commands to calculate the design criterion for a randomly generated design. 
+
+    - `1.3. locopt funcs.R`: contains functions and graph objects to evaluate design criterion for the "locopt" (CNAR) model. The results of this file is saved in `funcs/locopt_funcs.RData`. At the end of the file (lines 110-end), there are also some test commands to calculate the design criterion for a randomly generated design. 
+    
+    - `1.4. bintemp funcs.R`: contains functions and graph objects to evaluate design criterion for the "bintemp" (BNTAR) model. The results of this file is saved in `funcs/bintemp_funcs.RData`. At the end of the file (lines 206-end), there are also some test commands to calculate the design criterion for a randomly generated design. 
+
+- `2. run funcs.R`: contains help functions to run different design-finding algorithms multiple times and save the results. The functions from this file are saved in `funcs/run_funcs.RData`
+
+    - `2.1. meta-heuristics funcs.R`: contains meta-heuristics design-finding algorithms. These functions are saved in `funcs/heuristics_funcs.RData`. At the end of the file (lines 586-end), there are some test commands to run meta-heuristic algorithms to find optimal design for the gane (POW-DEG) model with fixed parameters. 
+    
+    - `2.2. neural network funcs.R`: contains functions to fit one or an ensemble of neural networks. We need to write our own functions because the `neuralnet` package in R is not friendly for user-defined loss functions and the `keras` package could not be run on the server. The functions created by the file are saved in `funcs/neuralnet.RData`. At the end of the file (lines 530-end), there are some test commands to run the neural networks on the iris data to see if the defined functions give reasonable results.
+    
+    - `2.3. bayesopt funcs.R`: contains design-finding functions that employ Bayesian optimization techniques. These functions are saved in `funcs/bayesopt_funcs.RData`. At the end of the file (lines 510-end), there are some test commands to run Bayesian discrete optimization algorithms to find optimal design for the gane (POW-DEG) model with fixed parameters. 
+    
+    - `2.4. graph-based funcs.R`: contains graph clustering functions and treatment assignment functions using graph clustering. The functions are saved in `funcs/cluster_funcs.RData`. At the end of the file (lines 470-end), there are some test commands to run clustering algorithms on the enron network and to do graph cluster randomization for treatment assignment. 
+    
+- `3.test runs.R`: contains commands to test run the functions defined in the 1-2.4 code files, i.e., to calculate design criterion and generate (optimal) designs. There are also commands that can be run in relatively short time to reproduce parts of the results presented in the papers. 
+
+    - `3.1. monte carlo convergence.R`: codes to check the Monte Carlo approximation convergence. Code to visualize the results into Figure S2 starts from line 74. If you run the file on your own, results are saved in folder `results`. Results in the paper are saved in folder `saved results` and are ready to be summarized or plotted.
+    
+    - `3.2. compare graph cluster algos.R`: codes to check the different graph clustering algorithms. These were run on the servers and the results (in the paper) are saved in `saved results/clustering_compare.RData`. These results can be summarized into Table S1 with codes starting from line 126. If you run the file on your own, results are saved in folder `results`.
+    
+    - `3.3. design finding.R`: codes to run different optimization algorithms to find designs according to the user-specified network and model. These were run on the servers and results (in the paper) are saved in `saved results/designs`. If you run the file on your own, results are saved in folder `results`.
+    
+    - `3.4. reevaluation.R`: re-evaluate the designs found by file 3.3 using Monte Carlo approximation with more iterations for better precision. The results in the paper are saved in `saved results/evaluation`. If you run the file on your own, results are saved in folder `results`.
+    
+    - `3.5. visualization.R`: Summarize the designs found by file 3.3 and 3.4 in terms of design criterion values and design characteristics. These information are summarized into data frames. Codes to make Table S2 are lines 63-80. Codes to make Figure 1, 2, and S2 starts from line 322 to the end. The results in the paper are saved in `saved results/designs_summaries.RData`. If you run the file on your own, results are saved in folder `results`. Results in the paper are saved in folder `saved results` and are ready to be summarized or plotted.
+
+# How to Use the Files
+
+0. Download [R](https://www.r-project.org/) and [RStudio](https://posit.co/products/open-source/rstudio/). Open the R Scripts using RStudio. 
+
+1. **Install the packages required**: Use code file `0. install packages.R`. 
+
+    - Run lines 13-47 to install the required packages. 
+
+    - Run lines 53-56 to set the working directory to the folder that contains the unzipped files from the `Code_And_Data.zip` file. Another way to set the working directory: opening RStudio, choose Session/Set Working Directory/Choose Directory...
+
+    - In order to speed up the code running time, package `Rcpp` is used to run certain functions in C++ from R commands. There can be problems with using package `Rcpp`, the reasons are often due to incorrect reference path settings. Run lines 62-63 to detect whether `Rcpp` runs properly. If not, some help can be found [here](https://stackoverflow.com/questions/28376337/error-installing-and-running-rcpp) (Windows) and [here](https://stackoverflow.com/questions/46342411/wchar-h-file-not-found) (MacOS).
+    
+    - If the problem cannot be resolved, and `Rcpp` cannot be used, use the file `rcpp_help_funcs.R` instead. There are instructions related to this in each code file. 
+
+2. **Reproduce parts of results**: Use code file `3. test runs.R`
+
+    - Choose the network and model folling instructions in lines 9-11. 
+    
+    - Load the required packages and data following instructions in lines 13-38.
+    
+    - To calculate the design criterion given a design: follow instructions in lines 40-63.
+    
+    - To reproduce a part of Figure S1: follow instructions in lines 65-91.
+    
+    - To generate graph-cluster randomization designs: follow instructions in lines 93-118.
+    
+    - To find optimal designs using meta-heuristic algorithms: follow instructions in lines 120-161.
+    
+    - To reproduce selected results of Figure 1 and 2: follow instructions in lines 163-end.
+    
+3. **Reproduce all results**: Follow instructions and run codes in files 3.1-3.5. Note that some codes takes very long time and in the paper, those are run on powerful servers with multiple cores, so we do not recommend doing this.
+
+4. **Reproduce Figure S1 with saved results**: Follow instructions in code file `3.1. monte carlo convergence.R`, lines 64-end. While doing so, do not run line 110. Uncomment and run line 111 instead.  
+    
+5. **Reproduce Table S1 with saved results**: Follow instructions in code file `3.2. compare graph cluster algos.R`, lines 122-end. While doing so, do not run line 196. Uncomment and run line 197 instead.  
+
+6. **Reproduce Table S2 with saved results**: Follow instructions in code file `3.5. visualization.R`, lines 5-80. While doing so, do not run lines 65-67. Uncomment and run lines 69-71 instead. 
+
+7. **Reproduce Figure 1, 2 and S2 with saved results**: Follow instructions in code file `3.5. visualization.R`, lines 317-end. While doing so, do not run line 328. Uncomment and run line 329 instead. 
+   
